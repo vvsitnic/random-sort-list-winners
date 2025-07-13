@@ -1,0 +1,35 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 20px;
+  font-family: sans-serif;
+}
+
+body {
+  padding-top: 35px;
+}
+
+.hidden {
+  display: hidden;
+}
+
+form {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+button {
+  cursor: pointer;
+}
+
+input,
+button {
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 10px;
+}
