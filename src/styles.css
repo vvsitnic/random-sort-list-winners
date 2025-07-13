@@ -8,6 +8,12 @@
 
 body {
   padding-top: 35px;
+  text-align: center;
+}
+
+.main {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .hidden {
@@ -15,12 +21,12 @@ body {
 }
 
 form {
-  max-width: 600px;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 10px;
+  margin-bottom: 30px;
 }
 
 button {
@@ -32,4 +38,48 @@ button {
   padding: 5px;
   border: 1px solid black;
   border-radius: 10px;
+  width: 100%;
+}
+
+table {
+  border: 1px solid black;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+.table-text {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-container {
+  text-align: center;
+}
+
+#shuffle {
+  max-width: 600px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+tr {
+  height: 30px;
+  border-top: 1px solid black;
+}
+
+td,
+th {
+  border-right: 1 solid black;
+  padding: 0 20px;
 }

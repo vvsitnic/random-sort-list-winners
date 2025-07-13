@@ -8,18 +8,17 @@
     <script src="app.ts" type="module"></script>
   </head>
   <body>
-    <form id="url-input-form">
-      <label for="url-insert">Insert url</label>
-      <input type="text" id="url-insert" />
-      <button>submit</button>
-    </form>
-
-    <form id="rm-players-form" class="hidden">
-      <label for="rm-players">Remove players</label>
-      <input type="text" id="rm-players" placeholder="1 5 10 4" />
-      <button>submit</button>
-    </form>
-
-    <table id="table"></table>
+    <div class="main">
+      <form id="url-input-form">
+        <label for="url-insert">Insert url</label>
+        <input type="text" id="url-insert" />
+        <button>submit</button>
+      </form>
+    </div>
+    <div class="table-container hidden">
+      <p class="table-text">Press any row to remove it</p>
+      <button id="shuffle" class="hidden">Shuffle</button>
+      <table id="table"></table>
+    </div>
   </body>
 </html>
