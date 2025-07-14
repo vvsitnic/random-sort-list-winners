@@ -1,50 +1,55 @@
-const insertUrlForm = document.getElementById("url-input-form");
-const table = document.getElementById("table");
-const shuffleButton = document.getElementById("shuffle");
+const insertUrlForm = document.getElementById(
+  "url-input-form"
+) as HTMLInputElement;
+const tableOpen = document.getElementById("table-open") as HTMLTableElement;
+const shuffleButton = document.getElementById("shuffle") as HTMLButtonElement;
 
-interface TableData {
-  [key: number]: string;
-}
+let tableDataOpen: [number, string][] = [];
+let playersToHighlite: string[] = [];
 
-let tableData = new Map<number, string>();
-
-insertUrlForm!.addEventListener("submit", async (e) => {
+// =========EVENTS=========
+insertUrlForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const inputElement = document.getElementById(
     "url-insert"
   ) as HTMLInputElement;
   const url = inputElement.value;
 
-  const htmlObj = await fetch("/.netlify/functions/fetch-dom?url=" + url).then(
+  const response = await fetch(`/.netlify/functions/fetch-dom?url=${url}`).then(
     (response) => response.json()
   );
 
   const parcer = new DOMParser();
-  const doc = parcer.parseFromString(htmlObj.message, "text/html");
+  const doc = parcer.parseFromString(response.message, "text/html");
+  const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
 
-  const tableHtmlElement = doc.querySelector("table");
-  tableData = extractTableData(tableHtmlElement) as Map<number, string>;
-  renderTable(tableData);
+  extractTableData(tableHtmlElement);
+  updateTableOpen(tableDataOpen);
+  playersToHighlite = [];
 });
 
-table!.addEventListener("click", (e) => {
+shuffleButton.addEventListener("click", (e) => {
+  updateTableOpen(tableDataOpen, "shuffle");
+  setPlayerToHighlite(playersToHighlite);
+});
+
+tableOpen.addEventListener("click", (e) => {
   const el = e.target as HTMLElement;
   const rank = el.closest("tr")?.dataset.rank;
-  if (rank) {
-    tableData.delete(+rank);
-    renderTable(tableData);
+
+  if (!rank) return;
+  const activeIndex = playersToHighlite.findIndex((pl) => pl === rank);
+  if (activeIndex === -1) {
+    playersToHighlite.push(rank);
+  } else {
+    playersToHighlite.splice(activeIndex, 1);
   }
+
+  setPlayerToHighlite(playersToHighlite);
 });
 
-shuffleButton!.addEventListener("click", (e) => {
-  renderTable(tableData, "shuffle");
-});
-
-function extractTableData(table: HTMLTableElement | null) {
-  if (table === null) return {};
-
-  const data = new Map<number, string>();
-
+// =========EXTRACT TABLE FROM DOM=========
+function extractTableData(table: HTMLTableElement) {
   const rows = Array.from(table.rows);
 
   for (const row of rows) {
@@ -54,34 +59,35 @@ function extractTableData(table: HTMLTableElement | null) {
       cells[0].tagName.toLowerCase() === "td" &&
       cells[1].tagName.toLowerCase() === "td"
     ) {
-      data.set(+cells[0].textContent!.trim(), cells[1].textContent!.trim());
+      tableDataOpen.push([
+        +cells[0].textContent!.trim(),
+        cells[1].textContent!.trim(),
+      ]);
     }
   }
-
-  return data;
 }
 
-function renderTable(
-  tableData: Map<number, string>,
+function updateTableOpen(
+  tableData: [number, string][],
   type: "shuffle" | "normal" = "normal"
 ) {
-  if (!tableData) return;
+  if (tableData.length === 0) return;
 
-  document.getElementById("shuffle")!.classList.remove("hidden");
   document.querySelector(".table-container")!.classList.remove("hidden");
+  if (type === "shuffle") shuffle(tableDataOpen);
 
-  const dataArr = Array.from(tableData);
-  if (type === "shuffle") shuffle(dataArr);
-
-  table!.innerHTML = `
+  tableOpen.innerHTML = `
       <tr>
+      <th>No</th>
       <th>Rank</th>
       <th>Name</th>
       </tr>
-      ${dataArr
+      ${tableDataOpen
         .map(
-          (val) =>
-            `<tr data-rank=${val[0]}><td>${val[0]}</td><td>${val[1]}</td></tr>`
+          (val, i) =>
+            `<tr data-rank=${val[0]}><td>${i + 1}.</td><td>${val[0]}</td><td>${
+              val[1]
+            }</td></tr>`
         )
         .join("")}
     `;
@@ -90,16 +96,23 @@ function renderTable(
 function shuffle(array: [number, string][]) {
   let currentIndex = array.length;
 
-  // While there remain elements to shuffle...
   while (currentIndex != 0) {
-    // Pick a remaining element...
     let randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
-    // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
       array[randomIndex],
       array[currentIndex],
     ];
   }
+}
+
+function setPlayerToHighlite(pls: string[] = []) {
+  const tableRows = Array.from(tableOpen.rows).slice(1);
+
+  tableRows.forEach((row) => {
+    pls.includes(row.dataset.rank!)
+      ? row.classList.add("highlite")
+      : row.classList.remove("highlite");
+  });
 }
