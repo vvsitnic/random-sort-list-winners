@@ -6,9 +6,9 @@ const shuffleButton = document.getElementById("shuffle") as HTMLButtonElement;
 const pasteButton = document.getElementById("paste") as HTMLButtonElement;
 
 let tableDataOpen: [number, string][] = [];
-let playersToHighlite: string[] = [];
+let playersToHighlight: string[] = [];
 
-// =========EVENTS=========
+// paste clipboard text into input
 pasteButton.addEventListener("click", async () => {
   try {
     const text = await navigator.clipboard.readText();
@@ -23,9 +23,12 @@ pasteButton.addEventListener("click", async () => {
   }
 });
 
+// handle url submission
 insertUrlForm.addEventListener("submit", async (e) => {
   try {
     e.preventDefault();
+
+    // get input url and polish it
     const inputElement = document.getElementById(
       "url-insert"
     ) as HTMLInputElement;
@@ -36,26 +39,26 @@ insertUrlForm.addEventListener("submit", async (e) => {
     }
     url = (url + "?").split("?")[0] + "?page=overall-combined";
 
-    const response = await fetch(
-      `/.netlify/functions/fetch-dom?url=${url}`
-    ).then((response) => {
-      if (response.ok) return response.json();
-      throw new Error(`HTTP error! status: ${response.status}`);
-    });
+    // fetch website html
+    const response = await fetch(`/.netlify/functions/fetch-dom?url=${url}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
 
-    if (response.error) {
-      throw new Error(response.error);
+    if (data.error) {
+      throw new Error(data.error);
     }
 
-    const parcer = new DOMParser();
-    const doc = parcer.parseFromString(response.message, "text/html");
+    // extract table element from the html doc
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data.message, "text/html");
     const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
 
     if (!tableHtmlElement) throw new Error("No table found.");
 
+    // update visual
     extractTableData(tableHtmlElement);
     updateTableOpen(tableDataOpen);
-    playersToHighlite = [];
+    playersToHighlight = [];
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);
@@ -65,27 +68,30 @@ insertUrlForm.addEventListener("submit", async (e) => {
   }
 });
 
+// suffle winners and update visuals
 shuffleButton.addEventListener("click", (e) => {
   updateTableOpen(tableDataOpen, "shuffle");
-  setPlayerToHighlite(playersToHighlite);
+  updateHighlightedPlayers(playersToHighlight);
 });
 
+// handle highliting winners
 tableOpen.addEventListener("click", (e) => {
+  // get pressed row
   const el = e.target as HTMLElement;
   const rank = el.closest("tr")?.dataset.rank;
 
   if (!rank) return;
-  const activeIndex = playersToHighlite.findIndex((pl) => pl === rank);
+  const activeIndex = playersToHighlight.findIndex((pl) => pl === rank);
   if (activeIndex === -1) {
-    playersToHighlite.push(rank);
+    playersToHighlight.push(rank);
   } else {
-    playersToHighlite.splice(activeIndex, 1);
+    playersToHighlight.splice(activeIndex, 1);
   }
 
-  setPlayerToHighlite(playersToHighlite);
+  updateHighlightedPlayers(playersToHighlight);
 });
 
-// =========EXTRACT TABLE FROM DOM=========
+// extract data from table html element
 function extractTableData(table: HTMLTableElement) {
   tableDataOpen = [];
   const rows = Array.from(table.rows);
@@ -131,6 +137,7 @@ function updateTableOpen(
     `;
 }
 
+// shuffle array
 function shuffle(array: [number, string][]) {
   let currentIndex = array.length;
 
@@ -145,12 +152,13 @@ function shuffle(array: [number, string][]) {
   }
 }
 
-function setPlayerToHighlite(pls: string[] = []) {
+// func to highlight players based on the arr
+function updateHighlightedPlayers(pls: string[] = []) {
   const tableRows = Array.from(tableOpen.rows).slice(1);
 
   tableRows.forEach((row) => {
     pls.includes(row.dataset.rank!)
-      ? row.classList.add("highlite")
-      : row.classList.remove("highlite");
+      ? row.classList.add("highlight")
+      : row.classList.remove("highlight");
   });
 }

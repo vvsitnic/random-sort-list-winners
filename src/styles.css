@@ -95,6 +95,26 @@ th:first-child {
   gap: 10px;
 }
 
-.highlite {
+.highlight {
   background-color: #e6a8a1;
+}
+
+.copyright {
+  font-size: 16px;
+  color: #666;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  margin: 8px;
+}
+
+.copyright a:link,
+.copyright a:visited {
+  font-size: 16px;
+  color: #666;
+}
+
+.copyright a:hover,
+.copyright a:active {
+  color: #333;
 }
