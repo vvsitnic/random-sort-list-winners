@@ -10,13 +10,17 @@ let playersToHighlite: string[] = [];
 
 // =========EVENTS=========
 pasteButton.addEventListener("click", async () => {
-  const text = await navigator.clipboard.readText();
-  if (!text) return;
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) return;
 
-  const inputElement = document.getElementById(
-    "url-insert"
-  ) as HTMLInputElement;
-  inputElement.value = text;
+    const inputElement = document.getElementById(
+      "url-insert"
+    ) as HTMLInputElement;
+    inputElement.value = text;
+  } catch (error) {
+    console.error("Clipboard access failed:", error);
+  }
 });
 
 insertUrlForm.addEventListener("submit", async (e) => {
@@ -47,11 +51,17 @@ insertUrlForm.addEventListener("submit", async (e) => {
     const doc = parcer.parseFromString(response.message, "text/html");
     const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
 
+    if (!tableHtmlElement) throw new Error("No table found.");
+
     extractTableData(tableHtmlElement);
     updateTableOpen(tableDataOpen);
     playersToHighlite = [];
   } catch (error) {
-    console.error(error.message);
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
   }
 });
 
