@@ -3,29 +3,56 @@ const insertUrlForm = document.getElementById(
 ) as HTMLInputElement;
 const tableOpen = document.getElementById("table-open") as HTMLTableElement;
 const shuffleButton = document.getElementById("shuffle") as HTMLButtonElement;
+const pasteButton = document.getElementById("paste") as HTMLButtonElement;
 
 let tableDataOpen: [number, string][] = [];
 let playersToHighlite: string[] = [];
 
 // =========EVENTS=========
-insertUrlForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+pasteButton.addEventListener("click", async () => {
+  const text = await navigator.clipboard.readText();
+  if (!text) return;
+
   const inputElement = document.getElementById(
     "url-insert"
   ) as HTMLInputElement;
-  const url = inputElement.value;
+  inputElement.value = text;
+});
 
-  const response = await fetch(`/.netlify/functions/fetch-dom?url=${url}`).then(
-    (response) => response.json()
-  );
+insertUrlForm.addEventListener("submit", async (e) => {
+  try {
+    e.preventDefault();
+    const inputElement = document.getElementById(
+      "url-insert"
+    ) as HTMLInputElement;
+    let url = inputElement.value.trim();
+    if (!url.startsWith("https://practiscore.com/results")) {
+      console.error("Wrong url!");
+      return;
+    }
+    // make the url point to the overall combined page
+    url = (url + "?").split("?")[0] + "?page=overall-combined";
+    const response = await fetch(
+      `/.netlify/functions/fetch-dom?url=${url}`
+    ).then((response) => {
+      if (response.ok) return response.json();
+      throw new Error(`HTTP error! status: ${response.status}`);
+    });
 
-  const parcer = new DOMParser();
-  const doc = parcer.parseFromString(response.message, "text/html");
-  const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
+    if (response.error) {
+      throw new Error(response.error);
+    }
 
-  extractTableData(tableHtmlElement);
-  updateTableOpen(tableDataOpen);
-  playersToHighlite = [];
+    const parcer = new DOMParser();
+    const doc = parcer.parseFromString(response.message, "text/html");
+    const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
+
+    extractTableData(tableHtmlElement);
+    updateTableOpen(tableDataOpen);
+    playersToHighlite = [];
+  } catch (error) {
+    console.error(error.message);
+  }
 });
 
 shuffleButton.addEventListener("click", (e) => {
@@ -50,6 +77,7 @@ tableOpen.addEventListener("click", (e) => {
 
 // =========EXTRACT TABLE FROM DOM=========
 function extractTableData(table: HTMLTableElement) {
+  tableDataOpen = [];
   const rows = Array.from(table.rows);
 
   for (const row of rows) {
