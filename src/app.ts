@@ -25,13 +25,13 @@ insertUrlForm.addEventListener("submit", async (e) => {
     const inputElement = document.getElementById(
       "url-insert"
     ) as HTMLInputElement;
+
     let url = inputElement.value.trim();
     if (!url.startsWith("https://practiscore.com/results")) {
-      console.error("Wrong url!");
-      return;
+      throw new Error("Wrong url!");
     }
-    // make the url point to the overall combined page
     url = (url + "?").split("?")[0] + "?page=overall-combined";
+
     const response = await fetch(
       `/.netlify/functions/fetch-dom?url=${url}`
     ).then((response) => {

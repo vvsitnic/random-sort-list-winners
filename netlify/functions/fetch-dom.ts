@@ -18,7 +18,7 @@ export const handler = async (event) => {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "FUCK U!",
+        message: "An error occured",
       }),
     };
   }
