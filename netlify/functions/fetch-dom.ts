@@ -17,7 +17,7 @@ export const handler = async (event) => {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Unexpected error occured.",
+        message: "Unexpected error occured.",
       }),
     };
   }
