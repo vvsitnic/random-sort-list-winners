@@ -44,10 +44,6 @@ insertUrlForm.addEventListener("submit", async (e) => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
 
-    if (data.error) {
-      throw new Error(data.error);
-    }
-
     // extract table element from the html doc
     const parser = new DOMParser();
     const doc = parser.parseFromString(data.message, "text/html");
