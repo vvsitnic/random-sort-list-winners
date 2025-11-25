@@ -4,6 +4,7 @@ const insertUrlForm = document.getElementById(
 const tableOpen = document.getElementById("table-open") as HTMLTableElement;
 const shuffleButton = document.getElementById("shuffle") as HTMLButtonElement;
 const pasteButton = document.getElementById("paste") as HTMLButtonElement;
+const submitButton = document.getElementById("submit") as HTMLButtonElement;
 
 let tableDataOpen: [number, string][] = [];
 let playersToHighlight: string[] = [];
@@ -40,13 +41,19 @@ insertUrlForm.addEventListener("submit", async (e) => {
     url = (url + "?").split("?")[0] + "?page=overall-combined";
 
     // fetch website html
+    submitButton.disabled = true;
     const response = await fetch(`/.netlify/functions/fetch-dom?url=${url}`);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
+    submitButton.disabled = false;
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(`HTTP error! status: ${data.error}`);
+    }
+
+    const data = await response.text();
 
     // extract table element from the html doc
     const parser = new DOMParser();
-    const doc = parser.parseFromString(data.message, "text/html");
+    const doc = parser.parseFromString(data, "text/html");
     const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
 
     if (!tableHtmlElement) throw new Error("No table found.");

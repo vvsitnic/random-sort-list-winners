@@ -1,24 +1,50 @@
-export const handler = async (event) => {
+export const handler = async (event: any) => {
   const url = event.queryStringParameters.url;
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`An error occured ${response.status}`);
+  if (!url || !url.startsWith("https://practiscore.com/results")) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Missing ?url parameter." }),
+      headers: { "Content-Type": "application/json" },
+    };
+  }
 
-    const html = await response.text();
+  try {
+    const encondedUrl = encodeURIComponent(url);
+    const apiUrl = `http://api.scrape.do?url=${encondedUrl}&token=${process.env.SCRAPE_TOKEN}&render=true`;
+
+    const response = await fetch(apiUrl, { method: "GET", headers: {} });
+    console.log(response);
+
+    if (!response.ok) {
+      return {
+        statusCode: response.status,
+        body: JSON.stringify({
+          error: `Scrape API error: ${response.status} ${response.statusText}`,
+        }),
+        headers: { "Content-Type": "application/json" },
+      };
+    }
+
+    const data = await response.text();
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        message: html,
-      }),
+      body: data,
+      headers: {
+        "Content-Type": "text/html",
+        "Netlify-CDN-Cache-Control": "public, max-age=31536000, durable",
+      },
     };
   } catch (err) {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Unexpected error occured.",
+        error: "Unexpected server error.",
+        details:
+          err instanceof Error ? err.message : "Unexpected error occured.",
       }),
+      headers: { "Content-Type": "application/json" },
     };
   }
 };
