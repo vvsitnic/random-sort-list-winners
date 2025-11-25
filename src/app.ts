@@ -42,7 +42,9 @@ insertUrlForm.addEventListener("submit", async (e) => {
 
     // fetch website html
     submitButton.disabled = true;
-    const response = await fetch(`/.netlify/functions/fetch-dom?url=${url}`);
+    const response = await fetch(
+      `/.netlify/functions/fetch-dom?url=${encodeURIComponent(url)}`
+    );
     submitButton.disabled = false;
     if (!response.ok) {
       const data = await response.json();
