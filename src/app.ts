@@ -5,7 +5,7 @@ const fileInput = document.getElementById("file-input") as HTMLInputElement;
 let tableDataOpen: [number, string][] = [];
 let playersToHighlight: string[] = [];
 
-// Select file and extract html
+// upload csv
 fileInput.addEventListener("change", async (e) => {
   const inputElement = e.target as HTMLInputElement;
 
@@ -16,16 +16,7 @@ fileInput.addEventListener("change", async (e) => {
 
   const text = await inputElement.files[0].text();
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(text, "text/html");
-  const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
-
-  if (!tableHtmlElement) {
-    console.error("No table found!");
-    return;
-  }
-
-  extractTableData(tableHtmlElement);
+  extractTableData(text);
   updateTableOpen(tableDataOpen);
   playersToHighlight = [];
 });
@@ -54,22 +45,27 @@ tableOpen.addEventListener("click", (e) => {
 });
 
 // extract data from table html element
-function extractTableData(table: HTMLTableElement) {
+function extractTableData(text: string) {
   tableDataOpen = [];
-  const rows = Array.from(table.rows);
-
-  for (const row of rows) {
-    const cells = Array.from(row.cells);
-    if (
-      cells.length >= 2 &&
-      cells[0].tagName.toLowerCase() === "td" &&
-      cells[1].tagName.toLowerCase() === "td"
-    ) {
-      tableDataOpen.push([
-        +cells[0].textContent!.trim(),
-        cells[1].textContent!.trim(),
-      ]);
+  const rows = text.trim().split("\n");
+  const arr = rows.map((row) => row.split(","));
+  console.log(arr);
+  let a = -1,
+    b = -1;
+  for (let i = 0; i < arr[0].length; i++) {
+    if (arr[0][i] === "Place") {
+      a = i;
     }
+
+    if (arr[0][i] === "Last Name") {
+      b = i;
+    }
+  }
+
+  if (a == -1 || b == -1) return;
+
+  for (let i = 1; i < arr.length; i++) {
+    tableDataOpen.push([+arr[i][a], arr[i][b + 1] + " " + arr[i][b]]);
   }
 }
 
