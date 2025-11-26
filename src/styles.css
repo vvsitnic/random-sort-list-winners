@@ -16,29 +16,42 @@ body {
   margin: 0 auto;
 }
 
-.hidden {
-  display: hidden;
+input[type="file"] {
+  display: none;
 }
 
-button {
+button,
+.custom-file-upload {
+  display: flex;
+  justify-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 10px;
   cursor: pointer;
-}
-
-input,
-button {
-  padding: 5px;
-  border: 1px solid #000;
+  background-color: #007bff;
+  color: white;
   border-radius: 10px;
   width: 100%;
+  border: none;
+}
+
+.custom-file-upload:hover,
+button:hover {
+  background-color: #0056b3;
+}
+
+.hidden {
+  display: hidden;
 }
 
 table {
   border: 1px solid #000;
   border-collapse: collapse;
+  border-radius: 10px;
 }
 
 .table-text {
-  margin-top: 20px;
+  margin-top: 30px;
   margin-bottom: 10px;
 }
 
@@ -60,7 +73,7 @@ table {
 #shuffle {
   max-width: 600px;
   margin: 0 auto;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 tr {
@@ -108,4 +121,10 @@ th:first-child {
 .copyright a:hover,
 .copyright a:active {
   color: #333;
+}
+
+svg {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
 }
