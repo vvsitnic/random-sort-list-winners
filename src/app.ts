@@ -1,37 +1,27 @@
 const tableOpen = document.getElementById("table-open") as HTMLTableElement;
 const shuffleButton = document.getElementById("shuffle") as HTMLButtonElement;
-const selectFileButton = document.getElementById(
-  "select-file-btn"
-) as HTMLButtonElement;
+const fileInput = document.getElementById("file-input") as HTMLInputElement;
 
 let tableDataOpen: [number, string][] = [];
 let playersToHighlight: string[] = [];
 
 // Select file and extract html
-selectFileButton.addEventListener("click", async () => {
-  const pickerOpts = {
-    multiple: false,
-    types: [
-      {
-        description: "HTML Files",
-        accept: {
-          "text/html": [".html"],
-        },
-      },
-    ],
-  } as OpenFilePickerOptions;
+fileInput.addEventListener("change", async (e) => {
+  const inputElement = e.target as HTMLInputElement;
 
-  const text = await window
-    .showOpenFilePicker(pickerOpts)
-    .then(([fileHandle]) => fileHandle.getFile())
-    .then((file) => file.text());
+  if (!inputElement.files || inputElement.files.length == 0) {
+    console.error("No file selected!");
+    return;
+  }
+
+  const text = await inputElement.files[0].text();
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(text, "text/html");
   const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
 
   if (!tableHtmlElement) {
-    console.error("No table found!!!");
+    console.error("No table found!");
     return;
   }
 
