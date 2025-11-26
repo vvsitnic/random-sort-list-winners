@@ -16,7 +16,7 @@ body {
   margin: 0 auto;
 }
 
-.custom-file-upload input[type="file"] {
+input[type="file"] {
   display: none;
 }
 
