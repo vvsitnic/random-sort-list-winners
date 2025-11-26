@@ -1,76 +1,43 @@
-const insertUrlForm = document.getElementById(
-  "url-input-form"
-) as HTMLInputElement;
 const tableOpen = document.getElementById("table-open") as HTMLTableElement;
 const shuffleButton = document.getElementById("shuffle") as HTMLButtonElement;
-const pasteButton = document.getElementById("paste") as HTMLButtonElement;
-const submitButton = document.getElementById("submit") as HTMLButtonElement;
+const selectFileButton = document.getElementById(
+  "select-file-btn"
+) as HTMLButtonElement;
 
 let tableDataOpen: [number, string][] = [];
 let playersToHighlight: string[] = [];
 
-// paste clipboard text into input
-pasteButton.addEventListener("click", async () => {
-  try {
-    const text = await navigator.clipboard.readText();
-    if (!text) return;
+// Select file and extract html
+selectFileButton.addEventListener("click", async () => {
+  const pickerOpts = {
+    multiple: false,
+    types: [
+      {
+        description: "HTML Files",
+        accept: {
+          "text/html": [".html"],
+        },
+      },
+    ],
+  } as OpenFilePickerOptions;
 
-    const inputElement = document.getElementById(
-      "url-insert"
-    ) as HTMLInputElement;
-    inputElement.value = text;
-  } catch (error) {
-    console.error("Clipboard access failed:", error);
+  const text = await window
+    .showOpenFilePicker(pickerOpts)
+    .then(([fileHandle]) => fileHandle.getFile())
+    .then((file) => file.text());
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, "text/html");
+  const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
+
+  if (!tableHtmlElement) {
+    console.error("No table found!!!");
+    return;
   }
-});
 
-// handle url submission
-insertUrlForm.addEventListener("submit", async (e) => {
-  try {
-    e.preventDefault();
-
-    // get input url and polish it
-    const inputElement = document.getElementById(
-      "url-insert"
-    ) as HTMLInputElement;
-
-    let url = inputElement.value.trim();
-    if (!url.startsWith("https://practiscore.com/results")) {
-      throw new Error("Wrong url!");
-    }
-    url = (url + "?").split("?")[0] + "?page=overall-combined";
-
-    // fetch website html
-    submitButton.disabled = true;
-    const response = await fetch(
-      `/.netlify/functions/fetch-dom?url=${encodeURIComponent(url)}`
-    );
-    submitButton.disabled = false;
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(`HTTP error! status: ${data.error}`);
-    }
-
-    const data = await response.text();
-
-    // extract table element from the html doc
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-    const tableHtmlElement = doc.querySelector("table") as HTMLTableElement;
-
-    if (!tableHtmlElement) throw new Error("No table found.");
-
-    // update visual
-    extractTableData(tableHtmlElement);
-    updateTableOpen(tableDataOpen);
-    playersToHighlight = [];
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message);
-    } else {
-      console.error("Unexpected error:", error);
-    }
-  }
+  extractTableData(tableHtmlElement);
+  updateTableOpen(tableDataOpen);
+  playersToHighlight = [];
 });
 
 // suffle winners and update visuals
